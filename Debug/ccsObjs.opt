@@ -1,0 +1,1 @@
+"./tshell.obj" "./main.obj" "./ishan.obj" "./fifo.obj" "./ds18x20.obj" "./boozerator_primary_controller.obj" "../lnk_msp430f5529.cmd" -l"libmath.a" -l"libc.a" 
