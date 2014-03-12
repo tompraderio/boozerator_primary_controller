@@ -14,6 +14,8 @@
 #include "ds18x20.h"
 
 
+unsigned char tx_framebuf[FRAMEBUF_SIZE];
+
 void onewire_test() {
 
 	uint16_t result1 = 0;
@@ -32,10 +34,45 @@ void onewire_test() {
 
 }
 
+void poll_and_send_temps() {
+	uint16_t temp1 = 0;
+
+	P1OUT |= BIT0; // turn LED1 on to indicate polling
+	temp1 = GetData();
+	send_temp_data_frame(temp1, temp1);
+	P1OUT &= ~BIT0; // polling finished
+}
+
 // ===================================================================================================================
 // Upstream protocol
 // ===================================================================================================================
 
+// Sends a temperature data frame out
+void send_temp_data_frame(uint16_t temp1, uint16_t temp2) {
+	unsigned int i=0;
+	unsigned int size = 9; // 4 header + 4 data + 1 checksum
+	unsigned char checksum = 0;
+
+	tx_framebuf[0] = 0x55;	// Start Delimiter
+	tx_framebuf[1] = 0x55;	// Start Delimiter
+	tx_framebuf[2] = size;	// Size of frame
+	tx_framebuf[3] = 0x01;	// Temp data type
+	tx_framebuf[4] = (char)(temp1 >> 8); // temp1 upper byte
+	tx_framebuf[5] = (char)(temp1); 	 // temp1 lower byte
+	tx_framebuf[6] = (char)(temp2 >> 8); // temp2 upper byte
+	tx_framebuf[7] = (char)(temp2);		 // temp2 lower byte
+
+	// calculate the checksum
+	checksum = 0;
+	for(i=0; i<size-1; i++) {
+		checksum += tx_framebuf[i];	// Calculate checksum
+	}
+	tx_framebuf[size-1] = 0xFF - checksum; // Append frame with checksum
+	tx_framebuf[size] = '\0';	// Terminate
+
+	// Now send the assembled frame out to the uart
+	print_string(tx_framebuf);
+}
 
 
 // ===================================================================================================================

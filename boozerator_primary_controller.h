@@ -18,9 +18,13 @@
 #define FRIDGE_TX_REG UCA1TXBUF
 #define FRIDGE_TX_DELAY 1000
 #define PACKET_SEGMENT_DELAY 4000 // should be about 3.75ms
+#define FRAMEBUF_SIZE 256
 
 void onewire_test();
+void poll_and_send_temps();
 
+// upstream protocol
+void send_temp_data_frame(uint16_t temp1, uint16_t temp2);
 
 // fridge commands
 void set_fridge_both_off();

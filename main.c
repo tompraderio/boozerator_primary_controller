@@ -65,6 +65,11 @@ int main(void)
   // Button init
   //P2REN |= BIT1;							// enable pull-up on P2.1 (S2)
 
+  // Timer A1 init
+  TA1CCTL0 = CCIE;                          // CCR0 interrupt enabled
+  TA1CCR0 = 0xFFFF;
+  TA1CTL = TASSEL_1 + MC_1 + TACLR;         // ACLK, upmode, clear TAR
+
   init_tShell();
   InitDS18B20();
 
@@ -108,4 +113,12 @@ __interrupt void USCI_A1_ISR(void)
   case 4:break;                             // Vector 4 - TXIFG
   default: break;
   }
+}
+
+// Timer0 A0 interrupt service routine
+// Triggers every ~2 seconds for polling temp sensors
+#pragma vector=TIMER1_A0_VECTOR
+__interrupt void TIMER1_A0_ISR(void)
+{
+	poll_and_send_temps();
 }

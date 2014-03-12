@@ -167,19 +167,9 @@ uint16_t GetData(void)
     ResetDS1820();
     WriteDS1820(DS1820_SKIP_ROM,0);
     WriteDS1820(DS1820_READ_SCRATCHPAD,0);
-    LED0_ON;
     temp = ReadDS1820();
-	LED0_OFF;
-    if(temp<0x8000)     
-    {
-    	
-        return(temp);
-    }
-    else                     
-    {
-        temp=(~temp)+1;LED0_OFF;
-        return(temp);
-    }    
+
+    return(temp);
 	
 }
 
