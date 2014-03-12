@@ -1,4 +1,9 @@
 #include <msp430.h>
+#include <string.h>
+#include <stdlib.h>
+#include "tshell.h"
+#include "fifo.h"
+#include "boozerator_primary_controller.h"
 #include "ishan.h"
 #include "ds18x20.h"
 
@@ -131,11 +136,11 @@ unsigned int ReadBit (void)
 	
 	
 }
-unsigned int ReadDS1820 ( void )           
+uint16_t ReadDS1820 ( void )
 {
 		  
  	unsigned char i;
- 	unsigned int data=0;
+ 	uint16_t data=0;
  	DS1820_RELEASE();						//release bus. set port in input mode
  	
  	 for(i=16;i>0;i--)
@@ -152,9 +157,9 @@ unsigned int ReadDS1820 ( void )
 	return(data);
 }
 
-float GetData(void)
+uint16_t GetData(void)
 {
-    unsigned int temp;
+	uint16_t temp;
   	ResetDS1820();
     WriteDS1820(DS1820_SKIP_ROM,0);
 	WriteDS1820(DS1820_CONVERT_T,1);
@@ -168,12 +173,12 @@ float GetData(void)
     if(temp<0x8000)     
     {
     	
-        return(temp*0.0625);
+        return(temp);
     }
     else                     
     {
         temp=(~temp)+1;LED0_OFF;
-        return(temp*0.0625);
+        return(temp);
     }    
 	
 }

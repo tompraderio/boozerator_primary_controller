@@ -15,7 +15,7 @@ int main(void)
 
   WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
 
-  //setup DCO to 16MHZ
+  //setup DCO to 8MHZ
   UCSCTL3 = SELREF_2;                       // Set DCO FLL reference = REFO
   UCSCTL4 |= SELA_2;                        // Set ACLK = REFO
   UCSCTL0 = 0x0000;                         // Set lowest possible DCOx, MODx
@@ -42,7 +42,7 @@ int main(void)
   P3SEL = BIT3+BIT4;                        // P3.3,4 = USCI_A0 TXD/RXD
   UCA0CTL1 |= UCSWRST;                      // **Put state machine in reset**
   UCA0CTL1 |= UCSSEL_2;                     // CLK = ACLK
-  UCA0BR0 = 0x80;                           // 32kHz/9600=3.41 (see User's Guide)
+  UCA0BR0 = 0x80;                           // Set for 9600 baud
   UCA0BR1 = 0x03;                           //
   UCA0MCTL = UCBRS_3+UCBRF_0;               // Modulation UCBRSx=3, UCBRFx=0
   UCA0CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
@@ -52,7 +52,7 @@ int main(void)
   P4SEL = BIT4+BIT5;                        // P4.4,5 = USCI_A1 TXD/RXD
   UCA1CTL1 |= UCSWRST;                      // **Put state machine in reset**
   UCA1CTL1 |= UCSSEL_1;                     // CLK = ACLK
-  UCA1BR0 = 0x03;                           // 32kHz/9600=3.41 (see User's Guide)
+  UCA1BR0 = 0x03;                           // Set for 9600 baud
   UCA1BR1 = 0x00;                           //
   UCA1MCTL = UCBRS_3+UCBRF_0;               // Modulation UCBRSx=3, UCBRFx=0
   UCA1CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
@@ -64,7 +64,6 @@ int main(void)
 
   // Button init
   //P2REN |= BIT1;							// enable pull-up on P2.1 (S2)
-
 
   init_tShell();
   InitDS18B20();

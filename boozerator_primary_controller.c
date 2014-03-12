@@ -5,18 +5,42 @@
  *      Author: Tom
  */
 #include <msp430.h>
+#include <string.h>
+#include <stdlib.h>
 #include "tshell.h"
+#include "fifo.h"
 #include "boozerator_primary_controller.h"
 #include "ishan.h"
 #include "ds18x20.h"
 
 
 void onewire_test() {
-	GetData();
+
+	uint16_t result1 = 0;
+	uint8_t char1 = 0;
+	uint8_t char2 = 0;
+
+	result1 = GetData();
+
+	char1 = result1;
+	char2 = result1 >> 8;
+
+	print_char((char)(result1));
+	print_char((char)(result1 >> 8));
+	print_line("Done");
+
+
 }
 
+// ===================================================================================================================
+// Upstream protocol
+// ===================================================================================================================
 
-// fridge commands
+
+
+// ===================================================================================================================
+// Fridge commands
+// ===================================================================================================================
 void set_fridge_both_off() {
 	send_packet_header(); // send the standard header
 	fridge_char(0x64); // fridge = 100 (off)
@@ -93,8 +117,9 @@ void set_fridge_low_freezer_high() {
 }
 
 
-
+// ===================================================================================================================
 // packet building blocks
+// ===================================================================================================================
 void send_packet_header() {
 	// standard packet header structure is (decimal):
 	// 2
@@ -126,7 +151,9 @@ void send_segment_terminator() {
 
 
 
-// helper functions
+// ===================================================================================================================
+// Helper functions
+// ===================================================================================================================
 void fridge_char(char inchar) {
 	__delay_cycles(FRIDGE_TX_DELAY); // delay for the buffer
 	FRIDGE_TX_REG = inchar;
@@ -140,7 +167,9 @@ void fridge_string(char* instring) {
 }
 
 
+// ===================================================================================================================
 // sanity checks
+// ===================================================================================================================
 void blink1() {
 	P1OUT ^= BIT0;                          // Toggle P1.0 using exclusive-OR
 	print_line("Blinked LED1");

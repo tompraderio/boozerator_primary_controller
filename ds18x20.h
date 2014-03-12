@@ -26,6 +26,6 @@ void WriteZero(void);
 void WriteOne(void);
 unsigned int ReadBit(void);
 void WriteDS1820 (unsigned char,int );
-unsigned int ReadDS1820 ( void );
-float GetData(void);
+uint16_t ReadDS1820 ( void );
+uint16_t GetData(void);
 #endif /*DS18X20_H_*/
