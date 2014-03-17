@@ -22,7 +22,7 @@ void onewire_test() {
 	uint8_t char1 = 0;
 	uint8_t char2 = 0;
 
-	result1 = GetData();
+	result1 = GetData_TEMP0();
 
 	char1 = result1;
 	char2 = result1 >> 8;
@@ -35,11 +35,21 @@ void onewire_test() {
 }
 
 void poll_and_send_temps() {
+	uint16_t temp0 = 0;
 	uint16_t temp1 = 0;
+	uint16_t temp2 = 0;
+	uint16_t temp3 = 0;
+	uint16_t temp4 = 0;
+	uint16_t temp5 = 0;
 
 	P1OUT |= BIT0; // turn LED1 on to indicate polling
-	temp1 = GetData();
-	send_temp_data_frame(temp1, temp1);
+	temp0 = GetData_TEMP0();
+	temp1 = GetData_TEMP1();
+	temp2 = GetData_TEMP2();
+	temp3 = GetData_TEMP3();
+	temp4 = GetData_TEMP4();
+	temp5 = GetData_TEMP5();
+	send_temp_data_frame(temp0, temp1, temp2, temp3, temp4, 0x0000);
 	P1OUT &= ~BIT0; // polling finished
 }
 
@@ -48,19 +58,27 @@ void poll_and_send_temps() {
 // ===================================================================================================================
 
 // Sends a temperature data frame out
-void send_temp_data_frame(uint16_t temp1, uint16_t temp2) {
+void send_temp_data_frame(uint16_t temp0, uint16_t temp1, uint16_t temp2, uint16_t temp3, uint16_t temp4, uint16_t temp5) {
 	unsigned int i=0;
-	unsigned int size = 9; // 4 header + 4 data + 1 checksum
+	unsigned int size = 17; // 4 header + 12 data + 1 checksum
 	unsigned char checksum = 0;
 
 	tx_framebuf[0] = 0x55;	// Start Delimiter
 	tx_framebuf[1] = 0x55;	// Start Delimiter
 	tx_framebuf[2] = size;	// Size of frame
 	tx_framebuf[3] = 0x01;	// Temp data type
-	tx_framebuf[4] = (char)(temp1 >> 8); // temp1 upper byte
-	tx_framebuf[5] = (char)(temp1); 	 // temp1 lower byte
-	tx_framebuf[6] = (char)(temp2 >> 8); // temp2 upper byte
-	tx_framebuf[7] = (char)(temp2);		 // temp2 lower byte
+	tx_framebuf[4] = (char)(temp0 >> 8); // temp1 upper byte
+	tx_framebuf[5] = (char)(temp0); 	 // temp1 lower byte
+	tx_framebuf[6] = (char)(temp1 >> 8); // temp2 upper byte
+	tx_framebuf[7] = (char)(temp1);		 // temp2 lower byte
+	tx_framebuf[8] = (char)(temp2 >> 8); // temp1 upper byte
+	tx_framebuf[9] = (char)(temp2); 	 // temp1 lower byte
+	tx_framebuf[10] = (char)(temp3 >> 8); // temp2 upper byte
+	tx_framebuf[11] = (char)(temp3);		 // temp2 lower byte
+	tx_framebuf[12] = (char)(temp4 >> 8); // temp1 upper byte
+	tx_framebuf[13] = (char)(temp4); 	 // temp1 lower byte
+	tx_framebuf[14] = (char)(temp5 >> 8); // temp2 upper byte
+	tx_framebuf[15] = (char)(temp5);		 // temp2 lower byte
 
 	// calculate the checksum
 	checksum = 0;
@@ -71,7 +89,7 @@ void send_temp_data_frame(uint16_t temp1, uint16_t temp2) {
 	tx_framebuf[size] = '\0';	// Terminate
 
 	// Now send the assembled frame out to the uart
-	print_string(tx_framebuf);
+	print_string_no_term(tx_framebuf, size);
 }
 
 

@@ -24,7 +24,7 @@ void onewire_test();
 void poll_and_send_temps();
 
 // upstream protocol
-void send_temp_data_frame(uint16_t temp1, uint16_t temp2);
+void send_temp_data_frame(uint16_t temp0, uint16_t temp1, uint16_t temp2, uint16_t temp3, uint16_t temp4, uint16_t temp5);
 
 // fridge commands
 void set_fridge_both_off();

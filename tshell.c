@@ -262,6 +262,15 @@ void print_string(char* instring) {
 
 }
 
+// Sends a string without relying on null termination
+void print_string_no_term(char* instring, int length) {
+	int x;
+	for(x=0; x<length; x++) {
+		print_char(instring[x]);
+	}
+
+}
+
 void print_line(char* instring) {
 	print_char(0x0D); //CR
 	print_char(0x0A); //LF

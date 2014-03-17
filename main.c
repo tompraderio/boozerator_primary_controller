@@ -9,6 +9,7 @@
 #include "ishan.h"
 #include "ds18x20.h"
 
+int counter = 0;
 
 int main(void)
 {
@@ -71,7 +72,6 @@ int main(void)
   TA1CTL = TASSEL_1 + MC_1 + TACLR;         // ACLK, upmode, clear TAR
 
   init_tShell();
-  InitDS18B20();
 
   __bis_SR_register(GIE);       			// Interrupts enabled
 
@@ -120,5 +120,12 @@ __interrupt void USCI_A1_ISR(void)
 #pragma vector=TIMER1_A0_VECTOR
 __interrupt void TIMER1_A0_ISR(void)
 {
-	poll_and_send_temps();
+	if (counter >= 2) {
+		counter = 0;
+		poll_and_send_temps();
+	}
+	else {
+		counter++;
+	}
+
 }

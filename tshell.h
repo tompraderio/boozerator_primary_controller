@@ -36,6 +36,7 @@ void process_char (unsigned char inchar);
 void print_prompt ();
 void print_char(char inchar);
 void print_string(char* instring);
+void print_string_no_term(char* instring, int length);
 void print_line(char* instring);
 void scan_buf();
 void function_handler (int argc, char *argv[]);
