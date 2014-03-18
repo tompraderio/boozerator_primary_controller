@@ -94,4 +94,37 @@ unsigned int ReadBit_TEMP2(void);
 void Write_TEMP2 (unsigned char,int );
 uint16_t Read_TEMP2 ( void );
 uint16_t GetData_TEMP2(void);
+
+unsigned int Reset_TEMP3 ( void );
+void TEMP3_HI(void);
+void TEMP3_LO(void);
+void TEMP3_RELEASE(void);
+void WriteZero_TEMP3(void);
+void WriteOne_TEMP3(void);
+unsigned int ReadBit_TEMP3(void);
+void Write_TEMP3 (unsigned char,int );
+uint16_t Read_TEMP3 ( void );
+uint16_t GetData_TEMP3(void);
+
+unsigned int Reset_TEMP4 ( void );
+void TEMP4_HI(void);
+void TEMP4_LO(void);
+void TEMP4_RELEASE(void);
+void WriteZero_TEMP4(void);
+void WriteOne_TEMP4(void);
+unsigned int ReadBit_TEMP4(void);
+void Write_TEMP4 (unsigned char,int );
+uint16_t Read_TEMP4 ( void );
+uint16_t GetData_TEMP4(void);
+
+unsigned int Reset_TEMP5 ( void );
+void TEMP5_HI(void);
+void TEMP5_LO(void);
+void TEMP5_RELEASE(void);
+void WriteZero_TEMP5(void);
+void WriteOne_TEMP5(void);
+unsigned int ReadBit_TEMP5(void);
+void Write_TEMP5 (unsigned char,int );
+uint16_t Read_TEMP5 ( void );
+uint16_t GetData_TEMP5(void);
 #endif /*DS18X20_H_*/

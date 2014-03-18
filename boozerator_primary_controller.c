@@ -16,6 +16,20 @@
 
 unsigned char tx_framebuf[FRAMEBUF_SIZE];
 
+uint16_t temp0 = 0;
+uint16_t temp1 = 0;
+uint16_t temp2 = 0;
+uint16_t temp3 = 0;
+uint16_t temp4 = 0;
+uint16_t temp5 = 0;
+
+// map the thermometers
+#define FREEZER_TEMP temp1
+#define FRIDGE_TEMP temp0
+
+int polling_counter = 0;
+int fridge_comm_counter = 0;
+
 void onewire_test() {
 
 	uint16_t result1 = 0;
@@ -34,14 +48,30 @@ void onewire_test() {
 
 }
 
-void poll_and_send_temps() {
-	uint16_t temp0 = 0;
-	uint16_t temp1 = 0;
-	uint16_t temp2 = 0;
-	uint16_t temp3 = 0;
-	uint16_t temp4 = 0;
-	uint16_t temp5 = 0;
+// Fires every 1.5 ~ 2 seconds
+void timer_event_handler() {
 
+	// Poll temps every 6 seconds or so
+	if (polling_counter >= 2) {
+		polling_counter = 0;
+		poll_and_send_temps();
+	}
+	else {
+		polling_counter++;
+	}
+
+	// Control the freezer every 1.5 minutes or so
+	if (fridge_comm_counter >= 31) {
+		fridge_comm_counter = 0;
+		control_freezer();
+	}
+	else {
+		fridge_comm_counter++;
+	}
+}
+
+// grab all the temps and send them up
+void poll_and_send_temps() {
 	P1OUT |= BIT0; // turn LED1 on to indicate polling
 	temp0 = GetData_TEMP0();
 	temp1 = GetData_TEMP1();
@@ -49,8 +79,31 @@ void poll_and_send_temps() {
 	temp3 = GetData_TEMP3();
 	temp4 = GetData_TEMP4();
 	temp5 = GetData_TEMP5();
-	send_temp_data_frame(temp0, temp1, temp2, temp3, temp4, 0x0000);
+	send_temp_data_frame(temp0, temp1, temp2, temp3, temp4, temp5);
 	P1OUT &= ~BIT0; // polling finished
+}
+
+// Control algorithm for the freezer side temperature
+void control_freezer() {
+	int16_t freezer_signed_temp = 0;
+	float freezer_temp_f = 0.0;
+
+	// convert the current freezer temp to signed F
+	freezer_signed_temp = FREEZER_TEMP;
+	freezer_temp_f = (freezer_signed_temp*0.0625)*1.8 + 32.0;
+
+	// control the freezer to between 38F and 43F
+	if (freezer_temp_f < 38.0) {
+		// freezer off
+		set_fridge_both_off();
+		P4OUT &= ~BIT7; // green led off
+	}
+	else if (freezer_temp_f > 43.0) {
+		// freezer on
+		set_fridge_high_freezer_low();
+		P4OUT |= BIT7; // green led on
+	}
+
 }
 
 // ===================================================================================================================
@@ -92,6 +145,31 @@ void send_temp_data_frame(uint16_t temp0, uint16_t temp1, uint16_t temp2, uint16
 	print_string_no_term(tx_framebuf, size);
 }
 
+// Sends a fridge state data frame out
+void send_fridge_state_frame(int fridge_state, int freezer_state) {
+	unsigned int i=0;
+	unsigned int size = 7; // 4 header + 2 data + 1 checksum
+	unsigned char checksum = 0;
+
+	tx_framebuf[0] = 0x55;	// Start Delimiter
+	tx_framebuf[1] = 0x55;	// Start Delimiter
+	tx_framebuf[2] = size;	// Size of frame
+	tx_framebuf[3] = 0x02;	// Fridge state type
+	tx_framebuf[4] = (char)(fridge_state); // temp1 upper byte
+	tx_framebuf[5] = (char)(freezer_state); 	 // temp1 lower byte
+
+	// calculate the checksum
+	checksum = 0;
+	for(i=0; i<size-1; i++) {
+		checksum += tx_framebuf[i];	// Calculate checksum
+	}
+	tx_framebuf[size-1] = 0xFF - checksum; // Append frame with checksum
+	tx_framebuf[size] = '\0';	// Terminate
+
+	// Now send the assembled frame out to the uart
+	print_string_no_term(tx_framebuf, size);
+}
+
 
 // ===================================================================================================================
 // Fridge commands
@@ -109,6 +187,9 @@ void set_fridge_both_off() {
 	fridge_char(0x5C); // second "checksum" = 92
 	send_segment_terminator();
 	send_packet_footer(); // send footer
+
+	// Send out a state frame upstream
+	send_fridge_state_frame(0, 0);
 }
 
 void set_fridge_both_low() {
@@ -124,6 +205,9 @@ void set_fridge_both_low() {
 	fridge_char(0x18); // second "checksum" = 24
 	send_segment_terminator();
 	send_packet_footer(); // send footer
+
+	// Send out a state frame upstream
+	send_fridge_state_frame(1, 1);
 }
 
 void set_fridge_both_high() {
@@ -139,6 +223,9 @@ void set_fridge_both_high() {
 	fridge_char(0x10); // second "checksum" = 16
 	send_segment_terminator();
 	send_packet_footer(); // send footer
+
+	// Send out a state frame upstream
+	send_fridge_state_frame(9, 9);
 }
 
 void set_fridge_high_freezer_low() {
@@ -154,6 +241,9 @@ void set_fridge_high_freezer_low() {
 	fridge_char(0xB9); // second "checksum" = 185
 	send_segment_terminator();
 	send_packet_footer(); // send footer
+
+	// Send out a state frame upstream
+	send_fridge_state_frame(9, 1);
 }
 
 void set_fridge_low_freezer_high() {
@@ -169,6 +259,9 @@ void set_fridge_low_freezer_high() {
 	fridge_char(0xB1); // second "checksum" = 177
 	send_segment_terminator();
 	send_packet_footer(); // send footer
+
+	// Send out a state frame upstream
+	send_fridge_state_frame(1, 9);
 }
 
 
