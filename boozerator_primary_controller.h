@@ -16,8 +16,8 @@
 
 
 #define FRIDGE_TX_REG UCA1TXBUF
-#define FRIDGE_TX_DELAY 1000
-#define PACKET_SEGMENT_DELAY 4000 // should be about 3.75ms
+#define FRIDGE_TX_DELAY 12000
+#define PACKET_SEGMENT_DELAY 28000 // should be about 3.75ms
 #define FRAMEBUF_SIZE 256
 
 void onewire_test();

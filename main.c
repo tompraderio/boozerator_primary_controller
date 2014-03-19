@@ -52,9 +52,9 @@ int main(void)
   // Fridge UART initialization
   P4SEL = BIT4+BIT5;                        // P4.4,5 = USCI_A1 TXD/RXD
   UCA1CTL1 |= UCSWRST;                      // **Put state machine in reset**
-  UCA1CTL1 |= UCSSEL_1;                     // CLK = ACLK
-  UCA1BR0 = 0x03;                           // Set for 9600 baud
-  UCA1BR1 = 0x00;                           //
+  UCA1CTL1 |= UCSSEL_2;                     // CLK = ACLK
+  UCA1BR0 = 0x80;                           // Set for 9600 baud
+  UCA1BR1 = 0x03;                           //
   UCA1MCTL = UCBRS_3+UCBRF_0;               // Modulation UCBRSx=3, UCBRFx=0
   UCA1CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
   UCA1IE |= UCRXIE;                         // Enable USCI_A0 RX interrupt
