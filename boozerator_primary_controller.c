@@ -50,6 +50,8 @@ void onewire_test() {
 
 // Fires every 1.5 ~ 2 seconds
 void timer_event_handler() {
+	int fridge_state = 0;
+	int freezer_state = 1;
 
 	// Poll temps every 6 seconds or so
 	if (polling_counter >= 2) {
@@ -60,10 +62,12 @@ void timer_event_handler() {
 		polling_counter++;
 	}
 
-	// Control the freezer every 1.5 minutes or so
+	// Control the freezer and fridge every 1.5 minutes or so
 	if (fridge_comm_counter >= 31) {
 		fridge_comm_counter = 0;
-		control_freezer();
+		freezer_state = control_freezer();
+		fridge_state = control_fridge();
+		send_fridge_state_frame(fridge_state,freezer_state);
 	}
 	else {
 		fridge_comm_counter++;
@@ -84,7 +88,7 @@ void poll_and_send_temps() {
 }
 
 // Control algorithm for the freezer side temperature
-void control_freezer() {
+int control_freezer() {
 	int16_t freezer_signed_temp = 0;
 	float freezer_temp_f = 0.0;
 
@@ -97,13 +101,36 @@ void control_freezer() {
 		// freezer off
 		set_fridge_both_off();
 		P4OUT &= ~BIT7; // green led off
+		return 0;
 	}
 	else if (freezer_temp_f > 43.0) {
 		// freezer on
 		set_fridge_high_freezer_low();
 		P4OUT |= BIT7; // green led on
+		return 1;
 	}
 
+}
+
+int control_fridge() {
+	int16_t fridge_signed_temp = 0;
+	float fridge_temp_f = 0.0;
+
+	// convert the current fridge temp to signed F
+	fridge_signed_temp = FREEZER_TEMP;
+	fridge_temp_f = (fridge_signed_temp*0.0625)*1.8 + 32.0;
+
+	// control the fridge temp
+	if (fridge_temp_f < 48.0) {
+		// fridge fan off
+		fan_off();
+		return 0;
+	}
+	else if (fridge_temp_f > 53.0) {
+		// fridge fan on
+		fan_on();
+		return 1;
+	}
 }
 
 // ===================================================================================================================
@@ -172,7 +199,22 @@ void send_fridge_state_frame(int fridge_state, int freezer_state) {
 
 
 // ===================================================================================================================
+// Fan commands
+// Controls the fan to regulate the fridge side temperature
+// ===================================================================================================================
+void fan_off() {
+	P6OUT &= ~BIT6;
+}
+
+void fan_on() {
+	P6OUT |= BIT6;
+}
+
+
+
+// ===================================================================================================================
 // Fridge commands
+// Controls the compressor to regulate the freezer side temperature
 // ===================================================================================================================
 void set_fridge_both_off() {
 	send_packet_header(); // send the standard header
@@ -188,8 +230,6 @@ void set_fridge_both_off() {
 	send_segment_terminator();
 	send_packet_footer(); // send footer
 
-	// Send out a state frame upstream
-	send_fridge_state_frame(0, 0);
 }
 
 void set_fridge_both_low() {
@@ -206,8 +246,6 @@ void set_fridge_both_low() {
 	send_segment_terminator();
 	send_packet_footer(); // send footer
 
-	// Send out a state frame upstream
-	send_fridge_state_frame(1, 1);
 }
 
 void set_fridge_both_high() {
@@ -224,8 +262,6 @@ void set_fridge_both_high() {
 	send_segment_terminator();
 	send_packet_footer(); // send footer
 
-	// Send out a state frame upstream
-	send_fridge_state_frame(9, 9);
 }
 
 void set_fridge_high_freezer_low() {
@@ -242,8 +278,6 @@ void set_fridge_high_freezer_low() {
 	send_segment_terminator();
 	send_packet_footer(); // send footer
 
-	// Send out a state frame upstream
-	send_fridge_state_frame(9, 1);
 }
 
 void set_fridge_low_freezer_high() {
@@ -260,8 +294,6 @@ void set_fridge_low_freezer_high() {
 	send_segment_terminator();
 	send_packet_footer(); // send footer
 
-	// Send out a state frame upstream
-	send_fridge_state_frame(1, 9);
 }
 
 

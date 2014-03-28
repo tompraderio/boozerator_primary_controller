@@ -228,6 +228,12 @@ void function_handler (int argc, char *argv[]) {
 	else if (strcmp(argv[0], "w")==0){
 		onewire_test();
 	}
+	else if (strcmp(argv[0], "fan_on")==0){
+		fan_on();
+	}
+	else if (strcmp(argv[0], "fan_off")==0){
+		fan_off();
+	}
 
 
 

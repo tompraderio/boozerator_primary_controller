@@ -24,11 +24,16 @@ void onewire_test();
 
 void timer_event_handler();
 void poll_and_send_temps();
-void control_freezer();
+int control_freezer();
+int control_fridge();
 
 // upstream protocol
 void send_temp_data_frame(uint16_t temp0, uint16_t temp1, uint16_t temp2, uint16_t temp3, uint16_t temp4, uint16_t temp5);
 void send_fridge_state_frame(int fridge_state, int freezer_state);
+
+// fan commands
+void fan_off();
+void fan_on();
 
 // fridge commands
 void set_fridge_both_off();

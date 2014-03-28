@@ -63,6 +63,10 @@ int main(void)
   P1DIR |= BIT0;                            // Set P1.0 (led1) to output direction
   P4DIR |= BIT7;                            // Set P4.7 (led2) to output direction
 
+  // Fan control GPIO initialization
+  P6DIR |= BIT6; // set 6.6 (1.4 on expansion) to output
+  P6OUT &= ~BIT6; // Default off
+
   // Button init
   //P2REN |= BIT1;							// enable pull-up on P2.1 (S2)
 
