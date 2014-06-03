@@ -23,35 +23,15 @@ uint16_t temp3 = 0;
 uint16_t temp4 = 0;
 uint16_t temp5 = 0;
 
-// map the thermometers
-#define FREEZER_TEMP temp1
-#define FRIDGE_TEMP temp0
-
 int polling_counter = 0;
 int fridge_comm_counter = 0;
 
-void onewire_test() {
 
-	uint16_t result1 = 0;
-	uint8_t char1 = 0;
-	uint8_t char2 = 0;
-
-	result1 = GetData_TEMP0();
-
-	char1 = result1;
-	char2 = result1 >> 8;
-
-	print_char((char)(result1));
-	print_char((char)(result1 >> 8));
-	print_line("Done");
-
-
-}
 
 // Fires every 1.5 ~ 2 seconds
 void timer_event_handler() {
 	int fridge_state = 0;
-	int freezer_state = 1;
+	int freezer_state = 0;
 
 	// Poll temps every 6 seconds or so
 	if (polling_counter >= 2) {
@@ -63,7 +43,7 @@ void timer_event_handler() {
 	}
 
 	// Control the freezer and fridge every 1.5 minutes or so
-	if (fridge_comm_counter >= 31) {
+	if (fridge_comm_counter >= 50) {
 		fridge_comm_counter = 0;
 		freezer_state = control_freezer();
 		fridge_state = control_fridge();
@@ -97,13 +77,13 @@ int control_freezer() {
 	freezer_temp_f = (freezer_signed_temp*0.0625)*1.8 + 32.0;
 
 	// control the freezer to between 38F and 43F
-	if (freezer_temp_f < 38.0) {
+	if (freezer_temp_f < (FREEZER_SET_POINT - (FREEZER_TOLERANCE / 2))) {
 		// freezer off
 		set_fridge_both_off();
 		P4OUT &= ~BIT7; // green led off
 		return 0;
 	}
-	else if (freezer_temp_f > 43.0) {
+	else if (freezer_temp_f > (FREEZER_SET_POINT + (FREEZER_TOLERANCE / 2))) {
 		// freezer on
 		set_fridge_high_freezer_low();
 		P4OUT |= BIT7; // green led on
@@ -117,16 +97,16 @@ int control_fridge() {
 	float fridge_temp_f = 0.0;
 
 	// convert the current fridge temp to signed F
-	fridge_signed_temp = FREEZER_TEMP;
+	fridge_signed_temp = FRIDGE_TEMP;
 	fridge_temp_f = (fridge_signed_temp*0.0625)*1.8 + 32.0;
 
 	// control the fridge temp
-	if (fridge_temp_f < 48.0) {
+	if (fridge_temp_f < (FRIDGE_SET_POINT - (FRIDGE_TOLERANCE / 2))) {
 		// fridge fan off
 		fan_off();
 		return 0;
 	}
-	else if (fridge_temp_f > 53.0) {
+	else if (fridge_temp_f > (FRIDGE_SET_POINT + (FRIDGE_TOLERANCE / 2))) {
 		// fridge fan on
 		fan_on();
 		return 1;

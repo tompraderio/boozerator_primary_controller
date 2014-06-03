@@ -20,8 +20,17 @@
 #define PACKET_SEGMENT_DELAY 28000 // should be about 3.75ms
 #define FRAMEBUF_SIZE 256
 
-void onewire_test();
+// map the thermometers
+#define FREEZER_TEMP temp1
+#define FRIDGE_TEMP temp0
 
+// Set points
+#define FRIDGE_SET_POINT 53.0
+#define FRIDGE_TOLERANCE 5.0
+#define FREEZER_SET_POINT 40.0
+#define FREEZER_TOLERANCE 5.0
+
+// Control fucntions
 void timer_event_handler();
 void poll_and_send_temps();
 int control_freezer();

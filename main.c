@@ -62,6 +62,8 @@ int main(void)
   // LED initialization
   P1DIR |= BIT0;                            // Set P1.0 (led1) to output direction
   P4DIR |= BIT7;                            // Set P4.7 (led2) to output direction
+  P1OUT &= ~BIT0;
+  P4OUT &= ~BIT7;
 
   // Fan control GPIO initialization
   P6DIR |= BIT6; // set 6.6 (1.4 on expansion) to output

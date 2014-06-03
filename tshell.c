@@ -225,9 +225,6 @@ void function_handler (int argc, char *argv[]) {
 	else if (strcmp(argv[0], "low_high")==0){
 		set_fridge_low_freezer_high();
 	}
-	else if (strcmp(argv[0], "w")==0){
-		onewire_test();
-	}
 	else if (strcmp(argv[0], "fan_on")==0){
 		fan_on();
 	}
